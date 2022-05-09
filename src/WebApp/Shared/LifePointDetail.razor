@@ -1,0 +1,31 @@
+﻿@using Microsoft.Extensions.Logging
+@inject ILogger<LifePointDetail> Logger
+
+<h1>@Id</h1>
+
+@code {
+
+    [Parameter]
+    public string Id { get; set; } = null!;
+
+    private Task LogAsync(string message)
+    {
+        Logger.LogInformation(message);
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        await LogAsync($"{nameof(LifePointDetail)}-{nameof(OnInitializedAsync)}");
+        await base.OnInitializedAsync();
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await LogAsync($"{nameof(LifePointDetail)}-{nameof(OnAfterRenderAsync)}");
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+}

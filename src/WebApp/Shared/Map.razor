@@ -1,0 +1,41 @@
+﻿@using Microsoft.Extensions.Logging
+@using System.Collections
+@inject IJSRuntime JsRuntime
+@inject ILogger<Map> Logger
+
+<div id="mapid"></div>
+
+@code {
+
+    private IJSObjectReference _mapModule;
+    private IJSObjectReference _lifePointDetailModule;
+    private IJSObjectReference _leafletMap;
+    private DotNetObjectReference<Map>? _objRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _objRef = DotNetObjectReference.Create(this);
+            await InitializeMapAsync();
+        }
+        
+        await LogAsync($"{nameof(Map)}-{nameof(OnAfterRenderAsync)}");
+    }
+    
+    [JSInvokable]
+    public Task LogAsync(string message)
+    {
+        Logger.LogInformation(message);
+        return Task.CompletedTask;
+    }
+
+    private async Task InitializeMapAsync()
+    {
+        _mapModule = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./Shared/Map.razor.js");
+        _leafletMap = await _mapModule.InvokeAsync<IJSObjectReference>("initializeMap", 51.0405849, 13.7478431, 20);
+        _lifePointDetailModule = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./Shared/LifePointDetail.razor.js");
+        await _lifePointDetailModule.InvokeVoidAsync("createMarker", _leafletMap, Guid.NewGuid(), 51.0405849, 13.7478431, _objRef);
+    }
+
+}
